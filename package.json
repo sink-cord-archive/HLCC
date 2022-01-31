@@ -1,0 +1,27 @@
+{
+  "name": "hlcc",
+  "version": "1.0.0",
+  "description": "The client mod agnostic tool to build Discord snippets",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "scripts": {
+    "dev": "tsc && node dist/plugin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yellowsink/HLCC.git"
+  },
+  "author": "Yellowsink",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/yellowsink/HLCC/issues"
+  },
+  "homepage": "https://github.com/yellowsink/HLCC#readme",
+  "dependencies": {
+    "@swc/core": "^1.2.135"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  },
+  "type": "module"
+}
