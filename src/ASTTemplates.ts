@@ -1,55 +1,32 @@
 import { ExpressionStatement, Statement } from "@swc/core";
+import { emitIdentifier, emitMemberExpression } from "./emitters.js";
 
-const span = { start: 0, end: 0, ctxt: 0 };
+export const blankSpan = { start: 0, end: 0, ctxt: 0 };
 
 export const popCall: ExpressionStatement = {
   type: "ExpressionStatement",
   expression: {
     type: "CallExpression",
-    callee: {
-      type: "MemberExpression",
-      object: {
-        type: "Identifier",
-        value: "webpackChunkdiscord_app",
-        span,
-        optional: false,
-      },
-      property: {
-        type: "Identifier",
-        value: "pop",
-        span,
-        optional: false,
-      },
-      span,
-    },
+    callee: emitMemberExpression(
+      emitIdentifier("webpackChunkdiscord_app"),
+      emitIdentifier("pop")
+    ),
     arguments: [],
-    span,
+    span: blankSpan,
   },
-  span,
+  span: blankSpan,
 };
 
 export const webpackCall = (statements: Statement[]): ExpressionStatement => ({
-  span,
+  span: blankSpan,
   type: "ExpressionStatement",
   expression: {
-    span,
+    span: blankSpan,
     type: "CallExpression",
-    callee: {
-      type: "MemberExpression",
-      object: {
-        type: "Identifier",
-        value: "webpackChunkdiscord_app",
-        span,
-        optional: false,
-      },
-      property: {
-        type: "Identifier",
-        value: "push",
-        span,
-        optional: false,
-      },
-      span,
-    },
+    callee: emitMemberExpression(
+      emitIdentifier("webpackChunkdiscord_app"),
+      emitIdentifier("push")
+    ),
     arguments: [
       {
         expression: {
@@ -62,25 +39,20 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement => ({
                   {
                     expression: {
                       type: "CallExpression",
-                      callee: {
-                        type: "Identifier",
-                        value: "Symbol",
-                        span,
-                        optional: false,
-                      },
-                      span,
+                      callee: emitIdentifier("Symbol"),
+                      span: blankSpan,
                       arguments: [],
                     },
                   },
                 ],
-                span,
+                span: blankSpan,
               },
             },
             {
               expression: {
                 type: "ObjectExpression",
                 properties: [],
-                span,
+                span: blankSpan,
               },
             },
             {
@@ -88,24 +60,17 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement => ({
                 type: "ArrowFunctionExpression",
                 generator: false,
                 async: false,
-                params: [
-                  {
-                    type: "Identifier",
-                    value: "e",
-                    optional: false,
-                    span,
-                  },
-                ],
+                params: [emitIdentifier("e")],
                 body: {
                   type: "BlockStatement",
                   stmts: statements,
-                  span,
+                  span: blankSpan,
                 },
-                span,
+                span: blankSpan,
               },
             },
           ],
-          span,
+          span: blankSpan,
         },
       },
     ],
