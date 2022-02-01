@@ -53,25 +53,6 @@ class HLCC extends Visitor {
       console.warn(
         "NOTE: the amount of args taken by your function does not match the amount of module finds you ask for"
       );
-
-    const statements =
-      func.body.type === "BlockStatement"
-        ? func.body.stmts
-        : [
-            <ExpressionStatement>{
-              type: "ExpressionStatement",
-              expression: func.body,
-            },
-          ];
-
-    return {
-      ...func,
-      body: {
-        type: "BlockStatement",
-        span: func.span,
-        stmts: statements
-      }
-    }
   }
 }
 
