@@ -72,8 +72,8 @@ console.log("unimportant");
 
 hlccInject([
     hlccAll(),
-    hlccByDName("SettingsView")/*,
-    hlccByProps("getChannel", "getCategory") */
+    hlccByDName("SettingsView"),
+    hlccByProps("getChannel", "getCategory")
   ],
   (mods, SettingsView, { getChannel }) => {
   console.log(SettingsView, getChannel, mods.length);

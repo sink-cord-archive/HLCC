@@ -1,6 +1,7 @@
 import {
   ArrowFunctionExpression,
   CallExpression,
+  Expression,
   ExpressionStatement,
   ForOfStatement,
   FunctionExpression,
@@ -23,93 +24,99 @@ const emitHlccAll = (i: number): VariableDeclaration =>
     emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
   );
 
-const emitHlccByDName = (
-  i: number,
-  name: string
-): [VariableDeclaration, ForOfStatement] => [
-  emitVariableDeclaration("let", emitIdentifier(`_${i}`)),
-
-  {
+const emitLoopOverModules = (i: number, test: Expression): ForOfStatement => ({
+  span: blankSpan,
+  type: "ForOfStatement",
+  await: blankSpan,
+  left: emitVariableDeclaration("const", emitIdentifier("m")),
+  right: {
     span: blankSpan,
-    type: "ForOfStatement",
-    await: blankSpan,
-    left: emitVariableDeclaration("const", emitIdentifier("m")),
-    right: {
+    type: "CallExpression",
+    callee: emitMemberExpression(
+      emitIdentifier("Object"),
+      emitIdentifier("values")
+    ),
+    arguments: [
+      {
+        expression: emitMemberExpression(
+          emitIdentifier("e"),
+          emitIdentifier("c")
+        ),
+      },
+    ],
+  },
+  body: {
+    span: blankSpan,
+    type: "IfStatement",
+    test,
+
+    consequent: {
       span: blankSpan,
-      type: "CallExpression",
-      callee: emitMemberExpression(
-        emitIdentifier("Object"),
-        emitIdentifier("values")
-      ),
-      arguments: [
+      type: "BlockStatement",
+      stmts: [
         {
-          expression: emitMemberExpression(
-            emitIdentifier("e"),
-            emitIdentifier("c")
-          ),
-        },
-      ],
-    },
-    body: {
-      span: blankSpan,
-      type: "IfStatement",
-      test: {
-        span: blankSpan,
-        type: "BinaryExpression",
-        left: /* emitIdentifier("m"), */ {
           span: blankSpan,
-          type: "OptionalChainingExpression",
-          expr: emitMemberExpression(
-            emitMemberExpression(
+          type: "ExpressionStatement",
+          expression: {
+            span: blankSpan,
+            type: "AssignmentExpression",
+            left: emitIdentifier(`_${i}`),
+            right: emitMemberExpression(
               emitMemberExpression(
                 emitIdentifier("m"),
                 emitIdentifier("exports")
               ),
               emitIdentifier("default")
             ),
-            emitIdentifier("displayName")
-          ),
+            operator: "=",
+          },
         },
-        right: {
+        {
           span: blankSpan,
-          type: "StringLiteral",
-          has_escape: false,
-          value: name,
+          type: "BreakStatement",
+          label: emitIdentifier(""),
         },
-        operator: "===",
-      },
-
-      consequent: {
-        span: blankSpan,
-        type: "BlockStatement",
-        stmts: [
-          {
-            span: blankSpan,
-            type: "ExpressionStatement",
-            expression: {
-              span: blankSpan,
-              type: "AssignmentExpression",
-              left: emitIdentifier(`_${i}`),
-              right: emitMemberExpression(
-                emitMemberExpression(
-                  emitIdentifier("m"),
-                  emitIdentifier("exports")
-                ),
-                emitIdentifier("default")
-              ),
-              operator: "=",
-            },
-          },
-          {
-            span: blankSpan,
-            type: "BreakStatement",
-            label: emitIdentifier(""),
-          },
-        ],
-      },
+      ],
     },
   },
+});
+
+const emitHlccByDName = (
+  i: number,
+  name: string
+): [VariableDeclaration, ForOfStatement] => [
+  emitVariableDeclaration("let", emitIdentifier(`_${i}`)),
+
+  emitLoopOverModules(i, {
+    span: blankSpan,
+    type: "BinaryExpression",
+    left: /* {
+          span: blankSpan,
+          type: "OptionalChainingExpression",
+          expr:  */ emitMemberExpression(
+      emitMemberExpression(
+        emitMemberExpression(emitIdentifier("m"), emitIdentifier("exports")),
+        emitIdentifier("default")
+      ),
+      emitIdentifier("displayName")
+    ) /* 
+        }, */,
+    right: {
+      span: blankSpan,
+      type: "StringLiteral",
+      has_escape: false,
+      value: name,
+    },
+    operator: "===",
+  }),
 ];
+
+const emitHlccByProps = (
+  i: number,
+  props: string[]
+): [VariableDeclaration, ForOfStatement] => {
+  throw new Error("TODO: implement");
+};
 
 export default (
   moduleFinds: CallExpression[],
@@ -137,6 +144,19 @@ export default (
           );
         statements.push(
           ...emitHlccByDName(i, find.arguments[0].expression.value)
+        );
+        break;
+      case "hlccByProps":
+        if (find.arguments.some((a) => a.expression.type !== "StringLiteral"))
+          throw new Error("all props must be string literals");
+
+        statements.push(
+          ...emitHlccByProps(
+            i,
+            // are you serious?????
+            // @ts-expect-error (2339)
+            find.arguments.map((a) => a.expression.value)
+          )
         );
         break;
     }
