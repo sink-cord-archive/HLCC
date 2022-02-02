@@ -11,6 +11,9 @@ import {
 
 import { webpackCall, popCall, blankSpan } from "./ASTTemplates.js";
 import {
+  emitAssignmentExpression,
+  emitCallExpression,
+  emitExpressionStatement,
   emitIdentifier,
   emitMemberExpression,
   emitVariableDeclaration,
@@ -29,22 +32,10 @@ const emitLoopOverModules = (i: number, test: Expression): ForOfStatement => ({
   type: "ForOfStatement",
   await: blankSpan,
   left: emitVariableDeclaration("const", emitIdentifier("m")),
-  right: {
-    span: blankSpan,
-    type: "CallExpression",
-    callee: emitMemberExpression(
-      emitIdentifier("Object"),
-      emitIdentifier("values")
-    ),
-    arguments: [
-      {
-        expression: emitMemberExpression(
-          emitIdentifier("e"),
-          emitIdentifier("c")
-        ),
-      },
-    ],
-  },
+  right: emitCallExpression(
+    emitMemberExpression(emitIdentifier("Object"), emitIdentifier("values")),
+    emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
+  ),
   body: {
     span: blankSpan,
     type: "IfStatement",
@@ -54,23 +45,18 @@ const emitLoopOverModules = (i: number, test: Expression): ForOfStatement => ({
       span: blankSpan,
       type: "BlockStatement",
       stmts: [
-        {
-          span: blankSpan,
-          type: "ExpressionStatement",
-          expression: {
-            span: blankSpan,
-            type: "AssignmentExpression",
-            left: emitIdentifier(`_${i}`),
-            right: emitMemberExpression(
+        emitExpressionStatement(
+          emitAssignmentExpression(
+            emitIdentifier(`_${i}`),
+            emitMemberExpression(
               emitMemberExpression(
                 emitIdentifier("m"),
                 emitIdentifier("exports")
               ),
               emitIdentifier("default")
-            ),
-            operator: "=",
-          },
-        },
+            )
+          )
+        ),
         {
           span: blankSpan,
           type: "BreakStatement",
