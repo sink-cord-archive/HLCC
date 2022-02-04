@@ -1,4 +1,9 @@
-import {
+import type {
+  AssignmentExpression,
+  CallExpression,
+  ExpressionStatement,
+  Import,
+  Super,
   ComputedPropName,
   Expression,
   Identifier,
@@ -6,13 +11,14 @@ import {
   Pattern,
   PrivateName,
   VariableDeclaration,
-} from "@swc/core";
-import {
-  AssignmentExpression,
-  CallExpression,
-  ExpressionStatement,
-  Import,
-  Super,
+  ArrayExpression,
+  ExprOrSpread,
+  Statement,
+  IfStatement,
+  BlockStatement,
+  StringLiteral,
+  BinaryOperator,
+  BinaryExpression,
 } from "@swc/core/types";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -82,4 +88,50 @@ export const emitExpressionStatement = (
   span: blankSpan,
   type: "ExpressionStatement",
   expression,
+});
+
+export const emitArrayExpression = (
+  ...elements: Expression[]
+): ArrayExpression => ({
+  type: "ArrayExpression",
+  elements: elements.map((e): ExprOrSpread => ({ expression: e })),
+  span: blankSpan,
+});
+
+export const emitBlockStatement = (...stmts: Statement[]): BlockStatement => ({
+  span: blankSpan,
+  type: "BlockStatement",
+  stmts,
+});
+
+export const emitIfStatement = (
+  test: Expression,
+  statements: Statement | Statement[]
+): IfStatement => ({
+  span: blankSpan,
+  type: "IfStatement",
+  test,
+
+  consequent: Array.isArray(statements)
+    ? emitBlockStatement(...statements)
+    : statements,
+});
+
+export const emitStringLiteral = (str: string): StringLiteral => ({
+  span: blankSpan,
+  type: "StringLiteral",
+  has_escape: false,
+  value: str,
+});
+
+export const emitBinaryExpression = (
+  left: Expression,
+  right: Expression,
+  op: BinaryOperator
+): BinaryExpression => ({
+  span: blankSpan,
+  type: "BinaryExpression",
+  left,
+  right,
+  operator: op,
 });
