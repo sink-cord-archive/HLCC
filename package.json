@@ -6,7 +6,7 @@
   "module": "dist/transform.js",
   "bin": "./dist/index.js",
   "scripts": {
-    "test": "tsc && node dist/index.js tests/snippet.js tests/compiled.js",
+    "test": "tsc && node dist/index.js tests/snippet.js tests/compiled.js --nominify",
     "prepublish": "rm -rf dist && tsc"
   },
   "repository": {

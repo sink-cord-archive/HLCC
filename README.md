@@ -17,6 +17,9 @@ hlccInject([], () => {
 
 Any instance of hlccInject is transformed.
 
+As of writing, the `e` object is available inside your injected function (so you can get the raw module list by `e.c`).
+This is not *intended* per-se, and is subject to not work at any point.
+
 Now simply build your code: `npm exec hlcc -- mycode.js output.js` or `pnpm hlcc mycode.js output.js`
 
 ## Module finding
