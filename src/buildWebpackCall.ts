@@ -3,29 +3,19 @@ import {
   CallExpression,
   Expression,
   ExpressionStatement,
-  ForOfStatement,
   FunctionExpression,
   Identifier,
   Statement,
   VariableDeclaration,
-  ForInStatement,
 } from "@swc/core";
 
-import {
-  webpackCall,
-  popCall,
-  blankSpan,
-  generateModuleList,
-} from "./ASTTemplates.js";
+import { webpackCall, popCall, loopOverModules } from "./ASTTemplates.js";
 import {
   emitAssignmentExpression,
   emitBinaryExpression,
-  emitBlockStatement,
   emitCallExpression,
-  emitComputedPropName,
   emitExpressionStatement,
   emitIdentifier,
-  emitIfStatement,
   emitMemberExpression,
   emitStringLiteral,
   emitVariableDeclaration,
@@ -36,35 +26,20 @@ const emitHlccAll = (i: number): VariableDeclaration =>
   emitVariableDeclaration(
     "const",
     emitIdentifier(`_${i}`),
-    emitIdentifier("_mod")
+    emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
   );
-
-const loopOverModules = (tests: [Expression, Statement][]): ForInStatement => ({
-  span: blankSpan,
-  type: "ForInStatement",
-  left: emitVariableDeclaration("const", emitIdentifier("k")),
-  right: emitIdentifier("_mod"),
-  body: emitBlockStatement(
-    emitVariableDeclaration(
-      "const",
-      emitIdentifier("m"),
-      emitMemberExpression(
-        emitIdentifier("_mod"),
-        emitComputedPropName(emitIdentifier("k"))
-      )
-    ),
-    ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
-  ),
-});
 
 const hlccByDNameTest = (
   varN: string,
   name: string
 ): [Expression, Statement] => [
   emitBinaryExpression(
-    emitIdentifier("m"),
+    emitIdentifier("mDef"),
     emitBinaryExpression(
-      emitMemberExpression(emitIdentifier("m"), emitIdentifier("displayName")),
+      emitMemberExpression(
+        emitIdentifier("mDef"),
+        emitIdentifier("displayName")
+      ),
       emitStringLiteral(name),
       "==="
     ),
@@ -80,9 +55,9 @@ const hlccByPropsTest = (
   props: string[]
 ): [Expression, Statement] => {
   const mProp = (prop: string) =>
-    emitMemberExpression(emitIdentifier("m"), emitIdentifier(prop));
+    emitMemberExpression(emitIdentifier("mDef"), emitIdentifier(prop));
 
-  let expr: Expression = emitIdentifier("m");
+  let expr: Expression = emitIdentifier("mDef");
 
   for (const prop of props)
     expr = emitBinaryExpression(expr, mProp(prop), "&&");
@@ -90,7 +65,7 @@ const hlccByPropsTest = (
   return [
     expr,
     emitExpressionStatement(
-      emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("m"))
+      emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("mDef"))
     ),
   ];
 };
@@ -99,7 +74,7 @@ export default (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
 ): [ExpressionStatement, ExpressionStatement] => {
-  const statements: Statement[] = [...generateModuleList];
+  const statements: Statement[] = [];
 
   const loopedTests: [Expression, Statement][] = [];
 

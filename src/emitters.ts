@@ -20,6 +20,7 @@ import type {
   BinaryOperator,
   BinaryExpression,
   ArrowFunctionExpression,
+  ConditionalExpression,
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -164,4 +165,16 @@ export const emitComputedPropName = (
   span: blankSpan,
   type: "Computed",
   expression,
+});
+
+export const emitConditionalExpression = (
+  test: Expression,
+  consequent: Expression,
+  alternate: Expression
+): ConditionalExpression => ({
+  span: blankSpan,
+  type: "ConditionalExpression",
+  test,
+  consequent,
+  alternate,
 });
