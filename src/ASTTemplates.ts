@@ -47,11 +47,6 @@ export const popCall: ExpressionStatement = emitExpressionStatement(
   )
 );
 
-export const iife = (statements: Statement[]): ExpressionStatement =>
-  emitExpressionStatement(
-    emitCallExpression(emitArrowFunctionExpression([], statements))
-  );
-
 export const webpackCall = (statements: Statement[]): ExpressionStatement =>
   emitExpressionStatement(
     emitCallExpression(

@@ -61,32 +61,30 @@ hlccInject([
 
 Here is the generated code - with `--nominify` flag and run through prettier:
 ```js
-(() => {
+{
+  const _finds = [];
   webpackChunkdiscord_app.push([
     [Symbol()],
     {},
     (e) => {
-      const _0 = e.c;
-      let _1;
-      let _2;
+      _finds[0] = e.c;
       for (const k in e.c) {
         const m = e.c[k].exports;
         const mDef = m && m.default && m.__esModule ? m.default : m;
-        if (mDef && mDef.displayName === "SettingsView") _1 = m;
-        if (mDef && mDef.getChannel && mDef.getCategory) _2 = mDef;
+        if (mDef && mDef.displayName === "SettingsView") _finds[1] = m;
+        if (mDef && mDef.getChannel && mDef.getCategory) _finds[2] = mDef;
       }
-      ((mods, SettingsView, { getChannel }) => {
-        console.log([SettingsView, getChannel, Object.keys(mods).length]);
-      })(_0, _1, _2);
     },
   ]);
   webpackChunkdiscord_app.pop();
-  void 0;
-})();
-
+  if (_finds.length < 3 || _finds.includes(void 0)) throw "";
+  ((mods, SettingsView, { getChannel }) => {
+    console.log([SettingsView, getChannel, Object.keys(mods).length]);
+  })(..._finds);
+}
 ```
 
 Here is the actual output as HLCC will output it:
 ```js
-(()=>{webpackChunkdiscord_app.push([[Symbol()],{},a=>{const b=a.c;let c;let d;for(const e in a.c){const f=a.c[e].exports;const g=f&&f.default&&f.__esModule?f.default:f;if(g&&g.displayName==="SettingsView")c=f;if(g&&g.getChannel&&g.getCategory)d=g}((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(b,c,d)}]);webpackChunkdiscord_app.pop();void 0})()
+({const a=[];webpackChunkdiscord_app.push([[Symbol()],{},b=>{a[0]=b.c;for(const c in b.c){const d=b.c[c].exports;const e=d&&d.default&&d.__esModule?d.default:d;if(e&&e.displayName==="SettingsView")a[1]=d;if(e&&e.getChannel&&e.getCategory)a[2]=e}}]);webpackChunkdiscord_app.pop();if(a.length<3||a.includes(void 0))throw"";((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(...a)}
 ```
