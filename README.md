@@ -63,21 +63,14 @@ Here is the generated code - for this minifying was disabled and the code was ru
     [Symbol()],
     {},
     (e) => {
-      const _mod = {};
-      for (const k in e.c) {
-        if (e.c.hasOwnProperty(k)) {
-          const m = e.c[k].exports;
-          if (m && m.default && m.__esModule) _mod[k] = m.default;
-          else _mod[k] = m;
-        }
-      }
-      const _0 = _mod;
+      const _0 = e.c;
       let _1;
       let _2;
-      for (const k1 in _mod) {
-        const m = _mod[k1];
-        if (m && m.displayName === "SettingsView") _1 = m;
-        if (m && m.getChannel && m.getCategory) _2 = m;
+      for (const k in e.c) {
+        const m = e.c[k].exports;
+        const mDef = m && m.default && m.__esModule ? m.default : m;
+        if (mDef && mDef.displayName === "SettingsView") _1 = m;
+        if (mDef && mDef.getChannel && mDef.getCategory) _2 = mDef;
       }
       ((mods, SettingsView, { getChannel }) => {
         console.log([SettingsView, getChannel, Object.keys(mods).length]);
@@ -87,9 +80,10 @@ Here is the generated code - for this minifying was disabled and the code was ru
   webpackChunkdiscord_app.pop();
   void 0;
 })();
+
 ```
 
 Here is the actual output as HLCC will output it:
 ```js
-(()=>{webpackChunkdiscord_app.push([[Symbol()],{},a=>{const b={};for(const c in a.c){if(a.c.hasOwnProperty(c)){const d=a.c[c].exports;if(d&&d.default&&d.__esModule)b[c]=d.default;else b[c]=d}}const e=b;let f;let g;for(const h in b){const i=b[h];if(i&&i.displayName==="SettingsView")f=i;if(i&&i.getChannel&&i.getCategory)g=i}((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(e,f,g)}]);webpackChunkdiscord_app.pop();void 0})()
+(()=>{webpackChunkdiscord_app.push([[Symbol()],{},a=>{const b=a.c;let c;let d;for(const e in a.c){const f=a.c[e].exports;const g=f&&f.default&&f.__esModule?f.default:f;if(g&&g.displayName==="SettingsView")c=f;if(g&&g.getChannel&&g.getCategory)d=g}((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(b,c,d)}]);webpackChunkdiscord_app.pop();void 0})()
 ```
