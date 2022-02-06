@@ -56,7 +56,7 @@ hlccInject([
 );
 ```
 
-Here is the generated code - for this minifying was disabled and the code was run through prettier:
+Here is the generated code - with `--nominify` flag and run through prettier:
 ```js
 (() => {
   webpackChunkdiscord_app.push([
