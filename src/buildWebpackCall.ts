@@ -5,20 +5,29 @@ import {
   ExpressionStatement,
   ForOfStatement,
   FunctionExpression,
+  Identifier,
   Statement,
   VariableDeclaration,
+  ForInStatement,
 } from "@swc/core";
 
-import { webpackCall, popCall, blankSpan } from "./ASTTemplates.js";
+import {
+  webpackCall,
+  popCall,
+  blankSpan,
+  generateModuleList,
+} from "./ASTTemplates.js";
 import {
   emitAssignmentExpression,
   emitBinaryExpression,
   emitBlockStatement,
   emitCallExpression,
+  emitComputedPropName,
   emitExpressionStatement,
   emitIdentifier,
   emitIfStatement,
   emitMemberExpression,
+  emitStringLiteral,
   emitVariableDeclaration,
 } from "./emitters.js";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
@@ -27,22 +36,23 @@ const emitHlccAll = (i: number): VariableDeclaration =>
   emitVariableDeclaration(
     "const",
     emitIdentifier(`_${i}`),
-    emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
+    emitIdentifier("_mod")
   );
 
-const emitLoopOverModules = (
-  i: number,
-  tests: [Expression, Statement][]
-): ForOfStatement => ({
+const loopOverModules = (tests: [Expression, Statement][]): ForInStatement => ({
   span: blankSpan,
-  type: "ForOfStatement",
-  await: blankSpan,
-  left: emitVariableDeclaration("const", emitIdentifier("m")),
-  right: emitCallExpression(
-    emitMemberExpression(emitIdentifier("Object"), emitIdentifier("values")),
-    emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
-  ),
+  type: "ForInStatement",
+  left: emitVariableDeclaration("const", emitIdentifier("k")),
+  right: emitIdentifier("_mod"),
   body: emitBlockStatement(
+    emitVariableDeclaration(
+      "const",
+      emitIdentifier("m"),
+      emitMemberExpression(
+        emitIdentifier("_mod"),
+        emitComputedPropName(emitIdentifier("k"))
+      )
+    ),
     ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
   ),
 });
@@ -51,25 +61,15 @@ const hlccByDNameTest = (
   varN: string,
   name: string
 ): [Expression, Statement] => [
-  {
-    span: blankSpan,
-    type: "BinaryExpression",
-    // todo optional chaining
-    left: emitMemberExpression(
-      emitMemberExpression(
-        emitMemberExpression(emitIdentifier("m"), emitIdentifier("exports")),
-        emitIdentifier("default")
-      ),
-      emitIdentifier("displayName")
+  emitBinaryExpression(
+    emitIdentifier("m"),
+    emitBinaryExpression(
+      emitMemberExpression(emitIdentifier("m"), emitIdentifier("displayName")),
+      emitStringLiteral(name),
+      "==="
     ),
-    right: {
-      span: blankSpan,
-      type: "StringLiteral",
-      has_escape: false,
-      value: name,
-    },
-    operator: "===",
-  },
+    "&&"
+  ),
   emitExpressionStatement(
     emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("m"))
   ),
@@ -79,31 +79,13 @@ const hlccByPropsTest = (
   varN: string,
   props: string[]
 ): [Expression, Statement] => {
-  const mExportsDefault = (prop: string) =>
-    emitMemberExpression(
-      emitMemberExpression(
-        emitMemberExpression(emitIdentifier("m"), emitIdentifier("exports")),
-        emitIdentifier("default")
-      ),
-      emitIdentifier(prop)
-    );
+  const mProp = (prop: string) =>
+    emitMemberExpression(emitIdentifier("m"), emitIdentifier(prop));
 
-  // like worse optional chaining
-  let expr = emitBinaryExpression(
-    emitIdentifier("m"),
-    emitBinaryExpression(
-      emitMemberExpression(emitIdentifier("m"), emitIdentifier("exports")),
-      emitMemberExpression(
-        emitMemberExpression(emitIdentifier("m"), emitIdentifier("exports")),
-        emitIdentifier("default")
-      ),
-      "&&"
-    ),
-    "&&"
-  );
+  let expr: Expression = emitIdentifier("m");
 
   for (const prop of props)
-    expr = emitBinaryExpression(mExportsDefault(prop), expr, "&&");
+    expr = emitBinaryExpression(expr, mProp(prop), "&&");
 
   return [
     expr,
@@ -117,7 +99,7 @@ export default (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
 ): [ExpressionStatement, ExpressionStatement] => {
-  const statements: Statement[] = [];
+  const statements: Statement[] = [...generateModuleList];
 
   const loopedTests: [Expression, Statement][] = [];
 
@@ -166,7 +148,13 @@ export default (
     }
   }
 
-  statements.push(emitCallExpression(func, /* pass all props here */));
+  statements.push(loopOverModules(loopedTests));
+
+  const props: Identifier[] = [];
+  for (let i = 0; i < moduleFinds.length; i++)
+    props.push(emitIdentifier(`_${i}`));
+
+  statements.push(emitExpressionStatement(emitCallExpression(func, ...props)));
 
   return [webpackCall(statements), popCall];
 };

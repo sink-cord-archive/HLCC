@@ -19,7 +19,8 @@ import type {
   StringLiteral,
   BinaryOperator,
   BinaryExpression,
-} from "@swc/core/types";
+  ArrowFunctionExpression,
+} from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
 export const emitIdentifier = (name: string): Identifier => ({
@@ -106,7 +107,8 @@ export const emitBlockStatement = (...stmts: Statement[]): BlockStatement => ({
 
 export const emitIfStatement = (
   test: Expression,
-  statements: Statement | Statement[]
+  statements: Statement | Statement[],
+  alternate?: Statement | Statement[]
 ): IfStatement => ({
   span: blankSpan,
   type: "IfStatement",
@@ -115,6 +117,13 @@ export const emitIfStatement = (
   consequent: Array.isArray(statements)
     ? emitBlockStatement(...statements)
     : statements,
+
+  alternate:
+    alternate === undefined
+      ? undefined
+      : Array.isArray(alternate)
+      ? emitBlockStatement(...alternate)
+      : alternate,
 });
 
 export const emitStringLiteral = (str: string): StringLiteral => ({
@@ -134,4 +143,25 @@ export const emitBinaryExpression = (
   left,
   right,
   operator: op,
+});
+
+export const emitArrowFunctionExpression = (
+  params: Pattern[],
+  stmts: Statement[],
+  async: boolean = false
+): ArrowFunctionExpression => ({
+  type: "ArrowFunctionExpression",
+  generator: false,
+  async,
+  params,
+  body: emitBlockStatement(...stmts),
+  span: blankSpan,
+});
+
+export const emitComputedPropName = (
+  expression: Expression
+): ComputedPropName => ({
+  span: blankSpan,
+  type: "Computed",
+  expression,
 });
