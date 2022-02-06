@@ -5,8 +5,10 @@ import {
   ExpressionStatement,
   ForInStatement,
   FunctionExpression,
+  IfStatement,
   Span,
   Statement,
+  UnaryExpression,
   VariableDeclaration,
 } from "@swc/core";
 import buildWebpackCall from "./buildWebpackCall.js";
@@ -22,10 +24,19 @@ import {
   emitIdentifier,
   emitIfStatement,
   emitMemberExpression,
+  emitNumericLiteral,
+  emitStringLiteral,
   emitVariableDeclaration,
 } from "./emitters.js";
 
 export const blankSpan: Span = { start: 0, end: 0, ctxt: 0 };
+
+export const void0: UnaryExpression = {
+  span: blankSpan,
+  type: "UnaryExpression",
+  argument: emitNumericLiteral(0),
+  operator: "void",
+};
 
 export const popCall: ExpressionStatement = emitExpressionStatement(
   emitCallExpression(
@@ -113,6 +124,7 @@ export const webpackAndRun = (
   VariableDeclaration,
   ExpressionStatement,
   ExpressionStatement,
+  IfStatement,
   ExpressionStatement
 ] => [
   emitVariableDeclaration(
@@ -121,6 +133,31 @@ export const webpackAndRun = (
     emitArrayExpression()
   ),
   ...buildWebpackCall(moduleFinds),
+  emitIfStatement(
+    emitBinaryExpression(
+      emitBinaryExpression(
+        emitMemberExpression(
+          emitIdentifier("_finds"),
+          emitIdentifier("length")
+        ),
+        emitNumericLiteral(moduleFinds.length),
+        "<"
+      ),
+      emitCallExpression(
+        emitMemberExpression(
+          emitIdentifier("_finds"),
+          emitIdentifier("includes")
+        ),
+        void0
+      ),
+      "||"
+    ),
+    {
+      span: blankSpan,
+      type: "ThrowStatement",
+      argument: emitStringLiteral(""),
+    }
+  ),
   emitExpressionStatement(
     emitCallExpression(func, {
       expression: emitIdentifier("_finds"),
