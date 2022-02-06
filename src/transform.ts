@@ -55,32 +55,17 @@ class HLCC extends Visitor {
   }
 }
 
-const transformed = await transform(
-  `
-
-hlccInject([
-    hlccAll(),
-    hlccByDName("SettingsView"),
-    hlccByProps("getChannel", "getCategory")
-  ],
-  (mods, SettingsView, { getChannel }) => {
-  console.log([SettingsView, getChannel, Object.keys(mods).length]);
-});
-
-`,
-  {
+export default async (raw: string) =>
+  (await transform(raw, {
     plugin: (m) => new HLCC().visitProgram(m),
     minify: true,
     jsc: {
       target: "es2022",
       minify: {
-        compress: {
-          negate_iife: false,
+        /* compress: {
+          inline: 0,
         },
-        mangle: true,
+        mangle: true, */
       },
     },
-  }
-);
-
-console.log(transformed.code);
+  })).code;

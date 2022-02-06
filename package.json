@@ -2,10 +2,12 @@
   "name": "hlcc",
   "version": "1.0.0",
   "description": "The client mod agnostic tool to build Discord snippets",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/transform.js",
+  "module": "dist/transform.js",
+  "bin": "dist/index.js",
   "scripts": {
-    "dev": "tsc && node dist/plugin.js"
+    "test": "tsc && node dist/index.js tests/snippet.js tests/compiled.js",
+    "prepublish": "rm -rf dist && tsc"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,7 @@
     "@swc/core": "^1.2.135"
   },
   "devDependencies": {
+    "@types/node": "^17.0.15",
     "typescript": "^4.5.5"
   },
   "type": "module"
