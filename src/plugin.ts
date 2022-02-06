@@ -70,8 +70,15 @@ hlccInject([
 `,
   {
     plugin: (m) => new HLCC().visitProgram(m),
+    minify: true,
     jsc: {
       target: "es2022",
+      minify: {
+        compress: {
+          negate_iife: false,
+        },
+        mangle: true,
+      },
     },
   }
 );
