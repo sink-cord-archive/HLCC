@@ -7,7 +7,7 @@ import {
 } from "@swc/core";
 
 import { Visitor } from "@swc/core/Visitor.js";
-import { iife } from "./ASTTemplates.js";
+import { iife, webpackAndRun } from "./ASTTemplates.js";
 import buildWebpackCall from "./buildWebpackCall.js";
 
 class HLCC extends Visitor {
@@ -51,7 +51,7 @@ class HLCC extends Visitor {
         "NOTE: the amount of args taken by your function does not match the amount of module finds you ask for"
       );
 
-    return iife(buildWebpackCall(moduleFinds, func));
+    return iife(webpackAndRun(moduleFinds, func));
   }
 }
 

@@ -21,6 +21,7 @@ import type {
   BinaryExpression,
   ArrowFunctionExpression,
   ConditionalExpression,
+  NumericLiteral,
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -63,14 +64,20 @@ export const emitVariableDeclaration = (
 
 export const emitCallExpression = (
   callee: Expression | Super | Import,
-  ...args: Expression[]
+  ...args: (Expression | ExprOrSpread)[]
 ): CallExpression => ({
   span: blankSpan,
   type: "CallExpression",
   callee,
-  arguments: args.map((a) => ({
-    expression: a,
-  })),
+  arguments: args.map(
+    (a): ExprOrSpread =>
+      // @ts-expect-error
+      a.type
+        ? {
+            expression: a,
+          }
+        : a
+  ),
 });
 
 export const emitAssignmentExpression = (
@@ -177,4 +184,10 @@ export const emitConditionalExpression = (
   test,
   consequent,
   alternate,
+});
+
+export const emitNumericLiteral = (value: number): NumericLiteral => ({
+  span: blankSpan,
+  type: "NumericLiteral",
+  value,
 });

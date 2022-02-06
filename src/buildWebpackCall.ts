@@ -1,38 +1,35 @@
 import {
-  ArrowFunctionExpression,
   CallExpression,
   Expression,
   ExpressionStatement,
-  FunctionExpression,
-  Identifier,
   Statement,
-  VariableDeclaration,
 } from "@swc/core";
 
 import { webpackCall, popCall, loopOverModules } from "./ASTTemplates.js";
 import {
   emitAssignmentExpression,
   emitBinaryExpression,
-  emitCallExpression,
+  emitComputedPropName,
   emitExpressionStatement,
   emitIdentifier,
   emitMemberExpression,
+  emitNumericLiteral,
   emitStringLiteral,
-  emitVariableDeclaration,
 } from "./emitters.js";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
 
-const emitHlccAll = (i: number): VariableDeclaration =>
-  emitVariableDeclaration(
-    "const",
-    emitIdentifier(`_${i}`),
-    emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
+const emitHlccAll = (i: number): ExpressionStatement =>
+  emitExpressionStatement(
+    emitAssignmentExpression(
+      emitMemberExpression(
+        emitIdentifier("_finds"),
+        emitComputedPropName(emitNumericLiteral(i))
+      ),
+      emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
+    )
   );
 
-const hlccByDNameTest = (
-  varN: string,
-  name: string
-): [Expression, Statement] => [
+const hlccByDNameTest = (i: number, name: string): [Expression, Statement] => [
   emitBinaryExpression(
     emitIdentifier("mDef"),
     emitBinaryExpression(
@@ -46,12 +43,18 @@ const hlccByDNameTest = (
     "&&"
   ),
   emitExpressionStatement(
-    emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("m"))
+    emitAssignmentExpression(
+      emitMemberExpression(
+        emitIdentifier("_finds"),
+        emitComputedPropName(emitNumericLiteral(i))
+      ),
+      emitIdentifier("m")
+    )
   ),
 ];
 
 const hlccByPropsTest = (
-  varN: string,
+  i: number,
   props: string[]
 ): [Expression, Statement] => {
   const mProp = (prop: string) =>
@@ -65,14 +68,19 @@ const hlccByPropsTest = (
   return [
     expr,
     emitExpressionStatement(
-      emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("mDef"))
+      emitAssignmentExpression(
+        emitMemberExpression(
+          emitIdentifier("_finds"),
+          emitComputedPropName(emitNumericLiteral(i))
+        ),
+        emitIdentifier("mDef")
+      )
     ),
   ];
 };
 
 export default (
-  moduleFinds: CallExpression[],
-  func: ArrowFunctionExpression | FunctionExpression
+  moduleFinds: CallExpression[]
 ): [ExpressionStatement, ExpressionStatement] => {
   const statements: Statement[] = [];
 
@@ -97,10 +105,7 @@ export default (
             "Invalid display name argument - must be string literal"
           );
         loopedTests.push(
-          hlccByDNameTest(`_${i}`, find.arguments[0].expression.value)
-        );
-        statements.push(
-          emitVariableDeclaration("let", emitIdentifier(`_${i}`))
+          hlccByDNameTest(i, find.arguments[0].expression.value)
         );
         break;
       case "hlccByProps":
@@ -109,27 +114,17 @@ export default (
 
         loopedTests.push(
           hlccByPropsTest(
-            `_${i}`,
+            i,
             // are you serious?????
             // @ts-expect-error (2339)
             find.arguments.map((a) => a.expression.value)
           )
-        );
-
-        statements.push(
-          emitVariableDeclaration("let", emitIdentifier(`_${i}`))
         );
         break;
     }
   }
 
   statements.push(loopOverModules(loopedTests));
-
-  const props: Identifier[] = [];
-  for (let i = 0; i < moduleFinds.length; i++)
-    props.push(emitIdentifier(`_${i}`));
-
-  statements.push(emitExpressionStatement(emitCallExpression(func, ...props)));
 
   return [webpackCall(statements), popCall];
 };

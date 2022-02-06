@@ -1,11 +1,15 @@
 import {
+  ArrowFunctionExpression,
+  CallExpression,
   Expression,
   ExpressionStatement,
   ForInStatement,
+  FunctionExpression,
   Span,
   Statement,
-  UnaryExpression,
+  VariableDeclaration,
 } from "@swc/core";
+import buildWebpackCall from "./buildWebpackCall.js";
 import {
   emitArrayExpression,
   emitArrowFunctionExpression,
@@ -23,17 +27,6 @@ import {
 
 export const blankSpan: Span = { start: 0, end: 0, ctxt: 0 };
 
-export const void0: UnaryExpression = {
-  span: blankSpan,
-  type: "UnaryExpression",
-  operator: "void",
-  argument: {
-    span: blankSpan,
-    type: "NumericLiteral",
-    value: 0,
-  },
-};
-
 export const popCall: ExpressionStatement = emitExpressionStatement(
   emitCallExpression(
     emitMemberExpression(
@@ -45,12 +38,7 @@ export const popCall: ExpressionStatement = emitExpressionStatement(
 
 export const iife = (statements: Statement[]): ExpressionStatement =>
   emitExpressionStatement(
-    emitCallExpression(
-      emitArrowFunctionExpression(
-        [],
-        [...statements, emitExpressionStatement(void0)]
-      )
-    )
+    emitCallExpression(emitArrowFunctionExpression([], statements))
   );
 
 export const webpackCall = (statements: Statement[]): ExpressionStatement =>
@@ -72,7 +60,9 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement =>
     )
   );
 
-export const loopOverModules = (tests: [Expression, Statement][]): ForInStatement => ({
+export const loopOverModules = (
+  tests: [Expression, Statement][]
+): ForInStatement => ({
   span: blankSpan,
   type: "ForInStatement",
   left: emitVariableDeclaration("const", emitIdentifier("k")),
@@ -85,9 +75,9 @@ export const loopOverModules = (tests: [Expression, Statement][]): ForInStatemen
         emitMemberExpression(
           emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
           emitComputedPropName(emitIdentifier("k"))
-        )
-      ,
-      emitIdentifier("exports"))
+        ),
+        emitIdentifier("exports")
+      )
     ),
     emitVariableDeclaration(
       "const",
@@ -115,3 +105,26 @@ export const loopOverModules = (tests: [Expression, Statement][]): ForInStatemen
     ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
   ),
 });
+
+export const webpackAndRun = (
+  moduleFinds: CallExpression[],
+  func: ArrowFunctionExpression | FunctionExpression
+): [
+  VariableDeclaration,
+  ExpressionStatement,
+  ExpressionStatement,
+  ExpressionStatement
+] => [
+  emitVariableDeclaration(
+    "const",
+    emitIdentifier("_finds"),
+    emitArrayExpression()
+  ),
+  ...buildWebpackCall(moduleFinds),
+  emitExpressionStatement(
+    emitCallExpression(func, {
+      expression: emitIdentifier("_finds"),
+      spread: blankSpan,
+    })
+  ),
+];
