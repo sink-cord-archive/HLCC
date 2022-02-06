@@ -55,17 +55,19 @@ class HLCC extends Visitor {
   }
 }
 
-export default async (raw: string) =>
-  (await transform(raw, {
-    plugin: (m) => new HLCC().visitProgram(m),
-    minify: true,
-    jsc: {
-      target: "es2022",
-      minify: {
-        /* compress: {
+export default async (input: string, shouldMinify: boolean = true) =>
+  (
+    await transform(input, {
+      plugin: (m) => new HLCC().visitProgram(m),
+      minify: shouldMinify,
+      jsc: {
+        target: "es2022",
+        minify: {
+          /* compress: {
           inline: 0,
+        },*/
+          mangle: shouldMinify,
         },
-        mangle: true, */
       },
-    },
-  })).code;
+    })
+  ).code;
