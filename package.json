@@ -4,7 +4,7 @@
   "description": "The client mod agnostic tool to build Discord snippets",
   "main": "dist/transform.js",
   "module": "dist/transform.js",
-  "bin": "dist/index.js",
+  "bin": "./dist/index.js",
   "scripts": {
     "test": "tsc && node dist/index.js tests/snippet.js tests/compiled.js",
     "prepublish": "rm -rf dist && tsc"
