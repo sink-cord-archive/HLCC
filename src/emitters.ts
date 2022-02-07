@@ -23,6 +23,7 @@ import type {
   ConditionalExpression,
   NumericLiteral,
   OptionalChainingExpression,
+  VariableDeclarator,
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -45,22 +46,24 @@ export const emitMemberExpression = (
 
 export const emitVariableDeclaration = (
   kind: "const" | "let" | "var",
-  id: Pattern,
-  init?: Expression
+  ...declarations: VariableDeclarator[]
 ): VariableDeclaration => ({
   span: blankSpan,
   type: "VariableDeclaration",
   kind,
   declare: false,
-  declarations: [
-    {
-      span: blankSpan,
-      type: "VariableDeclarator",
-      definite: true,
-      id,
-      init,
-    },
-  ],
+  declarations,
+});
+
+export const emitVariableDeclarator = (
+  id: Pattern,
+  init?: Expression
+): VariableDeclarator => ({
+  span: blankSpan,
+  type: "VariableDeclarator",
+  definite: true,
+  id,
+  init,
 });
 
 export const emitCallExpression = (

@@ -33,7 +33,8 @@ const emitHlccAll = (name: string): VariableDeclarator => ({
 
 const hlccByDNameTest = (
   varN: string,
-  name: string
+  name: string,
+  indexed?: [string, number]
 ): [Expression, Statement] => [
   emitBinaryExpression(
     emitOptionalChain(emitIdentifier("mDef"), emitIdentifier("displayName")),
@@ -47,7 +48,8 @@ const hlccByDNameTest = (
 
 const hlccByPropsTest = (
   varN: string,
-  props: string[]
+  props: string[],
+  indexed?: [string, number]
 ): [Expression, Statement] => {
   const mProp = (prop: string) =>
     emitMemberExpression(emitIdentifier("mDef"), emitIdentifier(prop));
@@ -59,6 +61,15 @@ const hlccByPropsTest = (
 
   for (const prop of props.slice(1))
     expr = emitBinaryExpression(expr, mProp(prop), "&&");
+
+  if (indexed) {
+    const indexTest = emitBinaryExpression(
+      emitIdentifier(indexed[0]),
+      emitNumericLiteral(indexed[1]),
+      "==="
+    );
+    expr = expr ? emitBinaryExpression(expr, indexTest, "&&") : indexTest;
+  }
 
   return [
     expr ?? emitNumericLiteral(1),
@@ -80,6 +91,7 @@ export default (
   });
 
   const variableDeclarations: VariableDeclarator[] = [];
+  const indexDeclarations: string[] = [];
 
   const loopedTests: [Expression, Statement][] = [];
 
@@ -92,12 +104,20 @@ export default (
     )
       throw new Error("Invalid module find type");
 
+    const lastArg = find.arguments[find.arguments.length - 1];
+    const indexed =
+      lastArg?.expression.type ===
+      "NumericLiteral" ? lastArg.expression.value : undefined;
+
+    if (indexed) indexDeclarations.push(`_i${i}`);
+    const args = indexed ? find.arguments.slice(0, -1) : find.arguments;
+
     switch (find.callee.value) {
       case "hlccAll":
         variableDeclarations.push(emitHlccAll(params[i]));
         break;
       case "hlccByDName":
-        if (find.arguments[0].expression.type !== "StringLiteral")
+        if (args[0].expression.type !== "StringLiteral")
           throw new Error(
             "Invalid display name argument - must be string literal"
           );
@@ -108,11 +128,15 @@ export default (
           id: emitIdentifier(params[i]),
         });
         loopedTests.push(
-          hlccByDNameTest(params[i], find.arguments[0].expression.value)
+          hlccByDNameTest(
+            params[i],
+            args[0].expression.value,
+            indexed ? [`_${i}`, indexed] : undefined
+          )
         );
         break;
       case "hlccByProps":
-        if (find.arguments.some((a) => a.expression.type !== "StringLiteral"))
+        if (args.some((a) => a.expression.type !== "StringLiteral"))
           throw new Error("all props must be string literals");
 
         variableDeclarations.push({
@@ -126,7 +150,7 @@ export default (
             params[i],
             // are you serious?????
             // @ts-expect-error (2339)
-            find.arguments.map((a) => a.expression.value)
+            args.map((a) => a.expression.value)
           )
         );
         break;
@@ -135,8 +159,8 @@ export default (
 
   const funcBody =
     func.body.type === "BlockStatement"
-      ? func.body
-      : emitExpressionStatement(func.body);
+      ? func.body.stmts
+      : [emitExpressionStatement(func.body)];
 
   const statements: Statement[] = [
     {
@@ -146,8 +170,8 @@ export default (
       declare: false,
       declarations: variableDeclarations,
     },
-    loopOverModules(loopedTests),
-    funcBody,
+    loopOverModules(indexDeclarations, loopedTests),
+    ...funcBody,
   ];
 
   return [

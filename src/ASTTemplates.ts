@@ -29,6 +29,7 @@ import {
   emitOptionalChain,
   emitStringLiteral,
   emitVariableDeclaration,
+  emitVariableDeclarator,
 } from "./emitters.js";
 
 export const blankSpan: Span = { start: 0, end: 0, ctxt: 0 };
@@ -43,10 +44,7 @@ export const void0: UnaryExpression = {
 export const webpackCall = (statements: Statement[]): ExpressionStatement =>
   emitExpressionStatement(
     emitCallExpression(
-      emitMemberExpression(
-        emitIdentifier("_w"),
-        emitIdentifier("push")
-      ),
+      emitMemberExpression(emitIdentifier("_w"), emitIdentifier("push")),
       emitArrayExpression(
         emitArrayExpression(emitCallExpression(emitIdentifier("Symbol"))),
         {
@@ -60,52 +58,85 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement =>
   );
 
 export const loopOverModules = (
+  decls: string[],
   tests: [Expression, Statement][]
-): BlockStatement => emitBlockStatement({
-  span: blankSpan,
-  type: "ForInStatement",
-  left: emitVariableDeclaration("const", emitIdentifier("k")),
-  right: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
-  body: emitBlockStatement(
-    emitVariableDeclaration(
-      "const",
-      emitIdentifier("m"),
-      emitMemberExpression(
-        emitMemberExpression(
-          emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
-          emitComputedPropName(emitIdentifier("k"))
-        ),
-        emitIdentifier("exports")
-      )
-    ),
-    emitVariableDeclaration(
-      "const",
-      emitIdentifier("mDef"),
-      emitConditionalExpression(
-        emitBinaryExpression(
-          emitOptionalChain(emitIdentifier("m"), emitIdentifier("default")),
-          emitMemberExpression(
-            emitIdentifier("m"),
-            emitIdentifier("__esModule")
+): BlockStatement =>
+  emitBlockStatement(
+    ...(decls.length === 0
+      ? []
+      : [
+          emitVariableDeclaration(
+            "let",
+            ...decls.map((d) => emitVariableDeclarator(emitIdentifier(d)))
           ),
-          "&&"
+        ]),
+    {
+      span: blankSpan,
+      type: "ForInStatement",
+      left: emitVariableDeclaration(
+        "const",
+        emitVariableDeclarator(emitIdentifier("k"))
+      ),
+      right: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
+      body: emitBlockStatement(
+        emitVariableDeclaration(
+          "const",
+          emitVariableDeclarator(
+            emitIdentifier("m"),
+            emitMemberExpression(
+              emitMemberExpression(
+                emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
+                emitComputedPropName(emitIdentifier("k"))
+              ),
+              emitIdentifier("exports")
+            )
+          )
         ),
-        emitMemberExpression(emitIdentifier("m"), emitIdentifier("default")),
-        emitIdentifier("m")
-      )
-    ),
-    ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
-  ),
-});
+        emitVariableDeclaration(
+          "const",
+          emitVariableDeclarator(
+            emitIdentifier("mDef"),
+            emitConditionalExpression(
+              emitBinaryExpression(
+                emitOptionalChain(
+                  emitIdentifier("m"),
+                  emitIdentifier("default")
+                ),
+                emitMemberExpression(
+                  emitIdentifier("m"),
+                  emitIdentifier("__esModule")
+                ),
+                "&&"
+              ),
+              emitMemberExpression(
+                emitIdentifier("m"),
+                emitIdentifier("default")
+              ),
+              emitIdentifier("m")
+            )
+          )
+        ),
+        ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
+      ),
+    }
+  );
 
 export const webpackAndRun = (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
-): [VariableDeclaration,ExpressionStatement, ExpressionStatement] => [
+): [
+  VariableDeclaration,
+  ExpressionStatement,
+  ExpressionStatement,
+  ExpressionStatement
+] => [
   emitVariableDeclaration(
     "const",
-    emitIdentifier("_w"),
-    emitIdentifier("webpackChunkdiscord_app")
+    emitVariableDeclarator(
+      emitIdentifier("_w"),
+      emitIdentifier("webpackChunkdiscord_app")
+    )
   ),
   ...buildWebpackCall(moduleFinds, func),
+  emitExpressionStatement(void0),
 ];
