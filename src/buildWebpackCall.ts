@@ -1,11 +1,13 @@
 import {
   ArrowFunctionExpression,
+  AssignmentExpression,
   CallExpression,
   Expression,
   ExpressionStatement,
   FunctionExpression,
   Statement,
   UnaryExpression,
+  VariableDeclaration,
   VariableDeclarator,
 } from "@swc/core";
 
@@ -22,16 +24,10 @@ import {
   emitOptionalChain,
   emitStringLiteral,
   emitUpdateExpression,
+  emitVariableDeclaration,
+  emitVariableDeclarator,
 } from "./emitters.js";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
-
-const emitHlccAll = (name: string): VariableDeclarator => ({
-  span: blankSpan,
-  type: "VariableDeclarator",
-  id: emitIdentifier(name),
-  definite: false,
-  init: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
-});
 
 const addIndexCheck = (
   varN: string,
@@ -105,7 +101,7 @@ const hlccByPropsTest = (
 export default (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
-): [ExpressionStatement, ExpressionStatement] => {
+): [VariableDeclaration, ExpressionStatement, ExpressionStatement] => {
   const params = func.params.map((p) => {
     if (p.type === "Identifier") return p.value;
     throw new Error(
@@ -113,10 +109,14 @@ export default (
     );
   });
 
+  // variables to declare before the call
   const variableDeclarations: VariableDeclarator[] = [];
+  // list of var names for indexed finds
   const indexDeclarations: string[] = [];
-
+  // contents of loop over modules
   const loopedTests: [Expression, Statement][] = [];
+  // list of variables to assign modules to
+  const moduleAssignments: string[] = [];
 
   for (let i = 0; i < moduleFinds.length; i++) {
     const find = moduleFinds[i];
@@ -138,7 +138,10 @@ export default (
 
     switch (find.callee.value) {
       case "hlccAll":
-        variableDeclarations.push(emitHlccAll(params[i]));
+        variableDeclarations.push(
+          emitVariableDeclarator(emitIdentifier(params[i]))
+        );
+        moduleAssignments.push(params[i]);
         break;
       case "hlccByDName":
         if (args[0].expression.type !== "StringLiteral")
@@ -182,24 +185,23 @@ export default (
     }
   }
 
-  const funcBody =
-    func.body.type === "BlockStatement"
-      ? func.body.stmts
-      : [emitExpressionStatement(func.body)];
+  let moduleAssignmentExpr: AssignmentExpression | undefined;
+  for (const modAssign of moduleAssignments)
+    moduleAssignmentExpr = emitAssignmentExpression(
+      emitIdentifier(modAssign),
+      moduleAssignmentExpr ??
+        emitMemberExpression(emitIdentifier("e"), emitIdentifier("c"))
+    );
 
-  const statements: Statement[] = [
-    {
-      span: blankSpan,
-      type: "VariableDeclaration",
-      kind: "let",
-      declare: false,
-      declarations: variableDeclarations,
-    },
-    loopOverModules(indexDeclarations, loopedTests),
-    ...funcBody,
+  let statements: Statement[] = [
+    ...(moduleAssignmentExpr
+      ? [emitExpressionStatement(moduleAssignmentExpr)]
+      : []),
+    ...loopOverModules(indexDeclarations, loopedTests),
   ];
 
   return [
+    emitVariableDeclaration("let", ...variableDeclarations),
     webpackCall(statements),
     emitExpressionStatement(
       emitCallExpression(

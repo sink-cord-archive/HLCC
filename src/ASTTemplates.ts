@@ -60,76 +60,74 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement =>
 export const loopOverModules = (
   decls: string[],
   tests: [Expression, Statement][]
-): BlockStatement =>
-  emitBlockStatement(
-    ...(decls.length === 0
-      ? []
-      : [
-          emitVariableDeclaration(
-            "let",
-            ...decls.map((d) =>
-              emitVariableDeclarator(emitIdentifier(d), emitNumericLiteral(0))
-            )
-          ),
-        ]),
-    {
-      span: blankSpan,
-      type: "ForInStatement",
-      left: emitVariableDeclaration(
-        "const",
-        emitVariableDeclarator(emitIdentifier("k"))
-      ),
-      right: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
-      body: emitBlockStatement(
+): Statement[] => [
+  ...(decls.length === 0
+    ? []
+    : [
         emitVariableDeclaration(
-          "const",
-          emitVariableDeclarator(
-            emitIdentifier("m"),
-            emitMemberExpression(
-              emitMemberExpression(
-                emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
-                emitComputedPropName(emitIdentifier("k"))
-              ),
-              emitIdentifier("exports")
-            )
+          "let",
+          ...decls.map((d) =>
+            emitVariableDeclarator(emitIdentifier(d), emitNumericLiteral(0))
           )
         ),
-        emitVariableDeclaration(
-          "const",
-          emitVariableDeclarator(
-            emitIdentifier("mDef"),
-            emitConditionalExpression(
-              emitBinaryExpression(
-                emitOptionalChain(
-                  emitIdentifier("m"),
-                  emitIdentifier("default")
-                ),
-                emitMemberExpression(
-                  emitIdentifier("m"),
-                  emitIdentifier("__esModule")
-                ),
-                "&&"
-              ),
+      ]),
+  {
+    span: blankSpan,
+    type: "ForInStatement",
+    left: emitVariableDeclaration(
+      "const",
+      emitVariableDeclarator(emitIdentifier("k"))
+    ),
+    right: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
+    body: emitBlockStatement(
+      emitVariableDeclaration(
+        "const",
+        emitVariableDeclarator(
+          emitIdentifier("m"),
+          emitMemberExpression(
+            emitMemberExpression(
+              emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
+              emitComputedPropName(emitIdentifier("k"))
+            ),
+            emitIdentifier("exports")
+          )
+        )
+      ),
+      emitVariableDeclaration(
+        "const",
+        emitVariableDeclarator(
+          emitIdentifier("mDef"),
+          emitConditionalExpression(
+            emitBinaryExpression(
+              emitOptionalChain(emitIdentifier("m"), emitIdentifier("default")),
               emitMemberExpression(
                 emitIdentifier("m"),
-                emitIdentifier("default")
+                emitIdentifier("__esModule")
               ),
-              emitIdentifier("m")
-            )
+              "&&"
+            ),
+            emitMemberExpression(
+              emitIdentifier("m"),
+              emitIdentifier("default")
+            ),
+            emitIdentifier("m")
           )
-        ),
-        ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
+        )
       ),
-    }
-  );
+      ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
+    ),
+  },
+];
 
 export const webpackAndRun = (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
 ): [
   VariableDeclaration,
+  VariableDeclaration,
   ExpressionStatement,
   ExpressionStatement,
+  BlockStatement,
   ExpressionStatement
 ] => [
   emitVariableDeclaration(
@@ -140,5 +138,10 @@ export const webpackAndRun = (
     )
   ),
   ...buildWebpackCall(moduleFinds, func),
+  emitBlockStatement(
+    ...(func.body.type === "BlockStatement"
+      ? func.body.stmts
+      : [emitExpressionStatement(func.body)])
+  ),
   emitExpressionStatement(void0),
 ];
