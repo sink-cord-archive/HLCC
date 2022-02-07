@@ -122,14 +122,7 @@ export const loopOverModules = (
 export const webpackAndRun = (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
-): [
-  VariableDeclaration,
-  VariableDeclaration,
-  ExpressionStatement,
-  ExpressionStatement,
-  BlockStatement,
-  ExpressionStatement
-] => [
+): Statement[] => [
   emitVariableDeclaration(
     "const",
     emitVariableDeclarator(
@@ -138,10 +131,8 @@ export const webpackAndRun = (
     )
   ),
   ...buildWebpackCall(moduleFinds, func),
-  emitBlockStatement(
-    ...(func.body.type === "BlockStatement"
-      ? func.body.stmts
-      : [emitExpressionStatement(func.body)])
-  ),
+  ...(func.body.type === "BlockStatement"
+    ? func.body.stmts
+    : [emitExpressionStatement(func.body)]),
   emitExpressionStatement(void0),
 ];
