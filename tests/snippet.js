@@ -1,8 +1,8 @@
 hlccInject(
   [
-    hlccByProps("_dispatcher", 50),
-    hlccByProps("open"),
-    hlccByDName("Header", 1),
+    hlccByProps("_dispatcher", 50), // 51st Flux store found
+    hlccByProps("open"), // first module with `open`
+    hlccByDName("Header", 1), // 2nd `Header` component
     hlccAll(),
   ],
   (store, settings, Header, mods) => {
@@ -10,6 +10,6 @@ hlccInject(
       console.log("Even number of modules");
     else console.log("Odd number of modules");
 
-    console.log(store, Header, settings);
+    console.log(store, settings, Header);
   }
 );
