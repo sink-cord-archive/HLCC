@@ -1,11 +1,11 @@
 hlccInject(
   [
     hlccByProps("_dispatcher", 50),
-    hlccByDName("Header"),
-    hlccByProps("open", 3),
+    hlccByProps("open"),
+    hlccByDName("Header", 1),
     hlccAll(),
   ],
-  (store, Header, settings, mods) => {
+  (store, settings, Header, mods) => {
     if (Object.keys(mods).length % 2 === 0)
       console.log("Even number of modules");
     else console.log("Odd number of modules");

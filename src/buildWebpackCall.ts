@@ -5,6 +5,7 @@ import {
   ExpressionStatement,
   FunctionExpression,
   Statement,
+  UnaryExpression,
   VariableDeclarator,
 } from "@swc/core";
 
@@ -20,6 +21,7 @@ import {
   emitNumericLiteral,
   emitOptionalChain,
   emitStringLiteral,
+  emitUpdateExpression,
 } from "./emitters.js";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
 
@@ -31,15 +33,43 @@ const emitHlccAll = (name: string): VariableDeclarator => ({
   init: emitMemberExpression(emitIdentifier("e"), emitIdentifier("c")),
 });
 
+const addIndexCheck = (
+  varN: string,
+  test: Expression | undefined,
+  indexed?: [string, number]
+): Expression => {
+  const indexCheck = (i: [string, number]) =>
+    emitBinaryExpression(
+      emitUpdateExpression(emitIdentifier(i[0]), "++"),
+      emitNumericLiteral(i[1]),
+      "==="
+    );
+
+  const undefinedCheck: UnaryExpression = {
+    span: blankSpan,
+    type: "UnaryExpression",
+    operator: "!",
+    argument: emitIdentifier(varN),
+  };
+
+  const check = indexed ? indexCheck(indexed) : undefinedCheck;
+
+  return test ? emitBinaryExpression(test, check, "&&") : check;
+};
+
 const hlccByDNameTest = (
   varN: string,
   name: string,
   indexed?: [string, number]
 ): [Expression, Statement] => [
-  emitBinaryExpression(
-    emitOptionalChain(emitIdentifier("mDef"), emitIdentifier("displayName")),
-    emitStringLiteral(name),
-    "==="
+  addIndexCheck(
+    varN,
+    emitBinaryExpression(
+      emitOptionalChain(emitIdentifier("mDef"), emitIdentifier("displayName")),
+      emitStringLiteral(name),
+      "==="
+    ),
+    indexed
   ),
   emitExpressionStatement(
     emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("m"))
@@ -62,17 +92,10 @@ const hlccByPropsTest = (
   for (const prop of props.slice(1))
     expr = emitBinaryExpression(expr, mProp(prop), "&&");
 
-  if (indexed) {
-    const indexTest = emitBinaryExpression(
-      emitIdentifier(indexed[0]),
-      emitNumericLiteral(indexed[1]),
-      "==="
-    );
-    expr = expr ? emitBinaryExpression(expr, indexTest, "&&") : indexTest;
-  }
+  expr = addIndexCheck(varN, expr, indexed);
 
   return [
-    expr ?? emitNumericLiteral(1),
+    expr,
     emitExpressionStatement(
       emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("mDef"))
     ),
@@ -106,8 +129,9 @@ export default (
 
     const lastArg = find.arguments[find.arguments.length - 1];
     const indexed =
-      lastArg?.expression.type ===
-      "NumericLiteral" ? lastArg.expression.value : undefined;
+      lastArg?.expression.type === "NumericLiteral"
+        ? lastArg.expression.value
+        : undefined;
 
     if (indexed) indexDeclarations.push(`_i${i}`);
     const args = indexed ? find.arguments.slice(0, -1) : find.arguments;
@@ -131,7 +155,7 @@ export default (
           hlccByDNameTest(
             params[i],
             args[0].expression.value,
-            indexed ? [`_${i}`, indexed] : undefined
+            indexed ? [`_i${i}`, indexed] : undefined
           )
         );
         break;
@@ -150,7 +174,8 @@ export default (
             params[i],
             // are you serious?????
             // @ts-expect-error (2339)
-            args.map((a) => a.expression.value)
+            args.map((a) => a.expression.value),
+            indexed ? [`_i${i}`, indexed] : undefined
           )
         );
         break;

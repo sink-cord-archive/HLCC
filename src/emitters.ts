@@ -24,6 +24,8 @@ import type {
   NumericLiteral,
   OptionalChainingExpression,
   VariableDeclarator,
+  UpdateOperator,
+  UpdateExpression,
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -205,4 +207,16 @@ export const emitOptionalChain = (
   // @ts-expect-error - why isnt this in the type defs?
   questionDotToken: blankSpan,
   expr: emitMemberExpression(object, property),
+});
+
+export const emitUpdateExpression = (
+  argument: Expression,
+  operator: UpdateOperator,
+  prefix: boolean = false
+): UpdateExpression => ({
+  span: blankSpan,
+  type: "UpdateExpression",
+  operator,
+  prefix,
+  argument,
 });

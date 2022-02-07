@@ -67,7 +67,9 @@ export const loopOverModules = (
       : [
           emitVariableDeclaration(
             "let",
-            ...decls.map((d) => emitVariableDeclarator(emitIdentifier(d)))
+            ...decls.map((d) =>
+              emitVariableDeclarator(emitIdentifier(d), emitNumericLiteral(0))
+            )
           ),
         ]),
     {
