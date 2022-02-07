@@ -22,6 +22,7 @@ import type {
   ArrowFunctionExpression,
   ConditionalExpression,
   NumericLiteral,
+  OptionalChainingExpression,
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
@@ -190,4 +191,15 @@ export const emitNumericLiteral = (value: number): NumericLiteral => ({
   span: blankSpan,
   type: "NumericLiteral",
   value,
+});
+
+export const emitOptionalChain = (
+  object: Expression,
+  property: Identifier | PrivateName | ComputedPropName
+): OptionalChainingExpression => ({
+  span: blankSpan,
+  type: "OptionalChainingExpression",
+  // @ts-expect-error - why isnt this in the type defs?
+  questionDotToken: blankSpan,
+  expr: emitMemberExpression(object, property),
 });

@@ -1,7 +1,6 @@
 import {
   CallExpression,
   ExpressionStatement,
-  Program,
   Statement,
   transform,
 } from "@swc/core";

@@ -70,9 +70,9 @@ Here is the generated code - with `--nominify` flag and run through prettier:
       _finds[0] = e.c;
       for (const k in e.c) {
         const m = e.c[k].exports;
-        const mDef = m && m.default && m.__esModule ? m.default : m;
-        if (mDef && mDef.displayName === "SettingsView") _finds[1] = m;
-        if (mDef && mDef.getChannel && mDef.getCategory) _finds[2] = mDef;
+        const mDef = m?.default && m.__esModule ? m.default : m;
+        if (mDef?.displayName === "SettingsView") _finds[1] = m;
+        if (mDef?.getChannel && mDef.getCategory) _finds[2] = mDef;
       }
     },
   ]);
@@ -86,5 +86,5 @@ Here is the generated code - with `--nominify` flag and run through prettier:
 
 Here is the actual output as HLCC will output it:
 ```js
-({const a=[];webpackChunkdiscord_app.push([[Symbol()],{},b=>{a[0]=b.c;for(const c in b.c){const d=b.c[c].exports;const e=d&&d.default&&d.__esModule?d.default:d;if(e&&e.displayName==="SettingsView")a[1]=d;if(e&&e.getChannel&&e.getCategory)a[2]=e}}]);webpackChunkdiscord_app.pop();if(a.length<3||a.includes(void 0))throw"";((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(...a)}
+{const a=[];webpackChunkdiscord_app.push([[Symbol()],{},b=>{a[0]=b.c;for(const c in b.c){const d=b.c[c].exports;const e=d?.default&&d.__esModule?d.default:d;if(e?.displayName==="SettingsView")a[1]=d;if(e?.getChannel&&e.getCategory)a[2]=e}}]);webpackChunkdiscord_app.pop();if(a.length<3||a.includes(void 0))throw"";((a,b,{getChannel:c})=>{console.log([b,c,Object.keys(a).length])})(...a)}
 ```

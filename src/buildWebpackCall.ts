@@ -14,6 +14,7 @@ import {
   emitIdentifier,
   emitMemberExpression,
   emitNumericLiteral,
+  emitOptionalChain,
   emitStringLiteral,
 } from "./emitters.js";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
@@ -31,16 +32,9 @@ const emitHlccAll = (i: number): ExpressionStatement =>
 
 const hlccByDNameTest = (i: number, name: string): [Expression, Statement] => [
   emitBinaryExpression(
-    emitIdentifier("mDef"),
-    emitBinaryExpression(
-      emitMemberExpression(
-        emitIdentifier("mDef"),
-        emitIdentifier("displayName")
-      ),
-      emitStringLiteral(name),
-      "==="
-    ),
-    "&&"
+    emitOptionalChain(emitIdentifier("mDef"), emitIdentifier("displayName")),
+    emitStringLiteral(name),
+    "==="
   ),
   emitExpressionStatement(
     emitAssignmentExpression(
@@ -60,13 +54,16 @@ const hlccByPropsTest = (
   const mProp = (prop: string) =>
     emitMemberExpression(emitIdentifier("mDef"), emitIdentifier(prop));
 
-  let expr: Expression = emitIdentifier("mDef");
+  let expr: Expression = emitOptionalChain(
+    emitIdentifier("mDef"),
+    emitIdentifier(props[0])
+  );
 
-  for (const prop of props)
+  for (const prop of props.slice(1))
     expr = emitBinaryExpression(expr, mProp(prop), "&&");
 
   return [
-    expr,
+    expr ?? emitNumericLiteral(1),
     emitExpressionStatement(
       emitAssignmentExpression(
         emitMemberExpression(

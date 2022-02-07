@@ -25,6 +25,7 @@ import {
   emitIfStatement,
   emitMemberExpression,
   emitNumericLiteral,
+  emitOptionalChain,
   emitStringLiteral,
   emitVariableDeclaration,
 } from "./emitters.js";
@@ -89,10 +90,8 @@ export const loopOverModules = (
       "const",
       emitIdentifier("mDef"),
       emitConditionalExpression(
-        emitBinaryExpression(
-          emitIdentifier("m"),
           emitBinaryExpression(
-            emitMemberExpression(
+            emitOptionalChain(
               emitIdentifier("m"),
               emitIdentifier("default")
             ),
@@ -102,8 +101,6 @@ export const loopOverModules = (
             ),
             "&&"
           ),
-          "&&"
-        ),
         emitMemberExpression(emitIdentifier("m"), emitIdentifier("default")),
         emitIdentifier("m")
       )
