@@ -4,7 +4,7 @@ hlccInject(
     hlccByDName("SettingsView"),
     hlccByProps("getChannel", "getCategory"),
   ],
-  (mods, SettingsView, { getChannel }) => {
-    console.log([SettingsView, getChannel, Object.keys(mods).length]);
+  (mods, SettingsView, channels) => {
+    console.log([SettingsView, channels.getChannel, Object.keys(mods).length]);
   }
 );

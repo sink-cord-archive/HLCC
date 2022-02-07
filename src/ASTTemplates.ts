@@ -1,5 +1,6 @@
 import {
   ArrowFunctionExpression,
+  BlockStatement,
   CallExpression,
   Expression,
   ExpressionStatement,
@@ -39,20 +40,11 @@ export const void0: UnaryExpression = {
   operator: "void",
 };
 
-export const popCall: ExpressionStatement = emitExpressionStatement(
-  emitCallExpression(
-    emitMemberExpression(
-      emitIdentifier("webpackChunkdiscord_app"),
-      emitIdentifier("pop")
-    )
-  )
-);
-
 export const webpackCall = (statements: Statement[]): ExpressionStatement =>
   emitExpressionStatement(
     emitCallExpression(
       emitMemberExpression(
-        emitIdentifier("webpackChunkdiscord_app"),
+        emitIdentifier("_w"),
         emitIdentifier("push")
       ),
       emitArrayExpression(
@@ -69,7 +61,7 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement =>
 
 export const loopOverModules = (
   tests: [Expression, Statement][]
-): ForInStatement => ({
+): BlockStatement => emitBlockStatement({
   span: blankSpan,
   type: "ForInStatement",
   left: emitVariableDeclaration("const", emitIdentifier("k")),
@@ -90,17 +82,14 @@ export const loopOverModules = (
       "const",
       emitIdentifier("mDef"),
       emitConditionalExpression(
-          emitBinaryExpression(
-            emitOptionalChain(
-              emitIdentifier("m"),
-              emitIdentifier("default")
-            ),
-            emitMemberExpression(
-              emitIdentifier("m"),
-              emitIdentifier("__esModule")
-            ),
-            "&&"
+        emitBinaryExpression(
+          emitOptionalChain(emitIdentifier("m"), emitIdentifier("default")),
+          emitMemberExpression(
+            emitIdentifier("m"),
+            emitIdentifier("__esModule")
           ),
+          "&&"
+        ),
         emitMemberExpression(emitIdentifier("m"), emitIdentifier("default")),
         emitIdentifier("m")
       )
@@ -112,48 +101,11 @@ export const loopOverModules = (
 export const webpackAndRun = (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
-): [
-  VariableDeclaration,
-  ExpressionStatement,
-  ExpressionStatement,
-  IfStatement,
-  ExpressionStatement
-] => [
+): [VariableDeclaration,ExpressionStatement, ExpressionStatement] => [
   emitVariableDeclaration(
     "const",
-    emitIdentifier("_finds"),
-    emitArrayExpression()
+    emitIdentifier("_w"),
+    emitIdentifier("webpackChunkdiscord_app")
   ),
-  ...buildWebpackCall(moduleFinds),
-  emitIfStatement(
-    emitBinaryExpression(
-      emitBinaryExpression(
-        emitMemberExpression(
-          emitIdentifier("_finds"),
-          emitIdentifier("length")
-        ),
-        emitNumericLiteral(moduleFinds.length),
-        "<"
-      ),
-      emitCallExpression(
-        emitMemberExpression(
-          emitIdentifier("_finds"),
-          emitIdentifier("includes")
-        ),
-        void0
-      ),
-      "||"
-    ),
-    {
-      span: blankSpan,
-      type: "ThrowStatement",
-      argument: emitStringLiteral(""),
-    }
-  ),
-  emitExpressionStatement(
-    emitCallExpression(func, {
-      expression: emitIdentifier("_finds"),
-      spread: blankSpan,
-    })
-  ),
+  ...buildWebpackCall(moduleFinds, func),
 ];
