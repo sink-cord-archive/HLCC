@@ -124,3 +124,61 @@ Here is the actual output as HLCC will output it:
 ```js
 {const a=webpackChunkdiscord_app;let b,c,d,e;a.push([[Symbol()],{},a=>{e=a.c;let f=0,g=0;for(const h in a.c){const i=a.c[h].exports;const j=i?.default&&i.__esModule?i.default:i;if(j?._dispatcher&&(f++)===50)b=j;if(j?.open&&!c)c=j;if(j?.displayName==="Header"&&(g++)===1)d=i}}]);a.pop();if(Object.keys(e).length%2===0)console.log("Even number of modules");else console.log("Odd number of modules");console.log(b,c,d);void 0}
 ```
+
+## A minimal (ish!) annotated example
+```js
+hlccInject(
+  [
+    hlccAll(),
+    hlccByDName("Header"),
+    hlccByProps("_dispatcher", 50),
+  ],
+  (mods, Header, store) => {
+    console.log(Object.keys(mods).length, Head, store);
+  }
+);
+```
+```js
+{
+  // help out minifiers in compressing the compiled snippets
+  const _w = webpackChunkdiscord_app;
+
+  // initialise variables - these are the "args" you asked for in your callback
+  let mods, header, store;
+
+  // inject into webpack
+  _w.push([
+    [Symbol()],
+    {},
+    (e) => {
+      // e.c now contains the raw module list
+      // mods (1st find) wants the raw modules
+      mods = e.c;
+      // the module find at index 2 (3rd one) uses indexing instead of first
+      // so store the counter here
+      let _i2 = 0;
+
+      // begin looping through modules
+      for (const k in e.c) {
+        // get the raw module
+        const m = e.c[k].exports;
+        // if the module has a default export, use that instead (except for display names)
+        const mDef = m?.default && m.__esModule ? m.default : m;
+        // match default.displayName, and only match once (&& !header)
+        if (mDef?.displayName === "Header" && !header) header = m;
+        // match default._dispatcher, and only if index is 50 (also increment)
+        if (mDef?._dispatcher && _i2++ === 50) store = mDef;
+      }
+    },
+  ]);
+
+  // dont memory leak
+  _w.pop();
+
+  // this is the code the user passed in the callback! Here just logs
+  console.log(Object.keys(mods).length, header, store);
+
+  // prevents the value of the last expr being printed when you paste into devtools
+  void 0;
+}
+```
