@@ -57,6 +57,12 @@ React.createElement(hlccByDName("Header").default);
 hlccByDName("Header", 1); // i actually wanted the 2nd header module
 ```
 
+## `hlccByPredicate((any) => bool, number?)`
+Finds a module by a test function. Optionally indexes - see above.
+```js
+hlccByPredicate(m => Array.isArray(m?._Messages) /* , 1 */);
+```
+
 ## As an API
 HLCC exports an (async) function to run its transform (and optionally / by default minify).
 

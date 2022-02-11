@@ -98,6 +98,21 @@ const hlccByPropsTest = (
   ];
 };
 
+const hlccByPredicateTest = (
+  varN: string,
+  pred: Expression,
+  indexed?: [string, number]
+): [Expression, Statement] => [
+  addIndexCheck(
+    varN,
+    emitCallExpression(pred, emitIdentifier("mRes")),
+    indexed
+  ),
+  emitExpressionStatement(
+    emitAssignmentExpression(emitIdentifier(varN), emitIdentifier("mRes"))
+  ),
+];
+
 export default (
   moduleFinds: CallExpression[],
   func: ArrowFunctionExpression | FunctionExpression
@@ -182,6 +197,25 @@ export default (
           )
         );
         break;
+      
+      case "hlccByPredicate":
+        variableDeclarations.push({
+          span: blankSpan,
+          type: "VariableDeclarator",
+          definite: false,
+          id: emitIdentifier(params[i]),
+        });
+        loopedTests.push(
+          hlccByPredicateTest(
+            params[i],
+            args[0].expression,
+            indexed ? [`_i${i}`, indexed] : undefined
+          )
+        );
+        break;
+
+      default:
+        throw new Error("Invalid module find " + find.callee.value)
     }
   }
 
