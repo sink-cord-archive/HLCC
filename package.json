@@ -6,8 +6,9 @@
   "module": "dist/transform.js",
   "bin": "./dist/index.js",
   "scripts": {
-    "test": "tsc && node dist/index.js tests/snippet.js tests/compiled.js --nominify",
-    "prepublish": "rm -rf dist && tsc"
+    "build": "hegel && flow-remove-types src/ --out-dir dist/ --all",
+    "test": "\"$npm_execpath\" run build && node dist/index.js tests/snippet.js tests/compiled.js --nominify",
+    "prepublish": "rm -rf dist && \"$npm_execpath\" run build"
   },
   "repository": {
     "type": "git",
@@ -23,8 +24,9 @@
     "@swc/core": "^1.2.135"
   },
   "devDependencies": {
-    "@types/node": "^17.0.15",
-    "typescript": "^4.5.5"
+    "@hegel/cli": "^0.0.45",
+    "@hegel/typings": "^0.0.45",
+    "flow-remove-types": "^2.173.0"
   },
   "type": "module"
 }

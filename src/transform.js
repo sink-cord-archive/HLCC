@@ -36,7 +36,7 @@ class HLCC extends Visitor {
     if (
       !moduleFinds.every(
         // ts moment bruh
-        (m): m is CallExpression => m?.type === "CallExpression" /*  &&
+        (m) => m?.type === "CallExpression" /*  &&
           m.callee.type === "Identifier" &&
           MODULE_FIND_FUNC_NAMES.includes(m.callee.value) */
       )

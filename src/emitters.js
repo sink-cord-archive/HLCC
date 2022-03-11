@@ -143,7 +143,7 @@ export const emitIfStatement = (
 export const emitStringLiteral = (str: string): StringLiteral => ({
   span: blankSpan,
   type: "StringLiteral",
-  has_escape: false,
+  hasEscape: false,
   value: str,
 });
 
