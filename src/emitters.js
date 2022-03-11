@@ -29,17 +29,14 @@ import type {
 } from "@swc/core";
 import { blankSpan } from "./ASTTemplates.js";
 
-export const emitIdentifier = (name: string): Identifier => ({
+export const emitIdentifier = (name): Identifier => ({
   span: blankSpan,
   type: "Identifier",
   value: name,
   optional: false,
 });
 
-export const emitMemberExpression = (
-  object: Expression,
-  property: Identifier | PrivateName | ComputedPropName
-): MemberExpression => ({
+export const emitMemberExpression = (object, property): MemberExpression => ({
   span: blankSpan,
   type: "MemberExpression",
   object,
@@ -48,7 +45,7 @@ export const emitMemberExpression = (
 
 export const emitVariableDeclaration = (
   kind: "const" | "let" | "var",
-  ...declarations: VariableDeclarator[]
+  ...declarations
 ): VariableDeclaration => ({
   span: blankSpan,
   type: "VariableDeclaration",
@@ -57,10 +54,7 @@ export const emitVariableDeclaration = (
   declarations,
 });
 
-export const emitVariableDeclarator = (
-  id: Pattern,
-  init?: Expression
-): VariableDeclarator => ({
+export const emitVariableDeclarator = (id, init?): VariableDeclarator => ({
   span: blankSpan,
   type: "VariableDeclarator",
   definite: true,
@@ -69,26 +63,21 @@ export const emitVariableDeclarator = (
 });
 
 export const emitCallExpression = (
-  callee: Expression | Super | Import,
+  callee,
   ...args: (Expression | ExprOrSpread)[]
 ): CallExpression => ({
   span: blankSpan,
   type: "CallExpression",
   callee,
-  arguments: args.map(
-    (a): ExprOrSpread =>
-      // @ts-expect-error
-      a.type
-        ? {
-            expression: a,
-          }
-        : a
+  arguments: args.map((a): ExprOrSpread =>
+    // @ts-expect-error
+    a.type ? { expression: a } : a
   ),
 });
 
 export const emitAssignmentExpression = (
   left: Expression,
-  right: Expression
+  right
 ): AssignmentExpression => ({
   span: blankSpan,
   type: "AssignmentExpression",
@@ -97,9 +86,7 @@ export const emitAssignmentExpression = (
   operator: "=",
 });
 
-export const emitExpressionStatement = (
-  expression: Expression
-): ExpressionStatement => ({
+export const emitExpressionStatement = (expression): ExpressionStatement => ({
   span: blankSpan,
   type: "ExpressionStatement",
   expression,
@@ -113,14 +100,14 @@ export const emitArrayExpression = (
   span: blankSpan,
 });
 
-export const emitBlockStatement = (...stmts: Statement[]): BlockStatement => ({
+export const emitBlockStatement = (...stmts): BlockStatement => ({
   span: blankSpan,
   type: "BlockStatement",
   stmts,
 });
 
 export const emitIfStatement = (
-  test: Expression,
+  test,
   statements: Statement | Statement[],
   alternate?: Statement | Statement[]
 ): IfStatement => ({
@@ -140,18 +127,14 @@ export const emitIfStatement = (
       : alternate,
 });
 
-export const emitStringLiteral = (str: string): StringLiteral => ({
+export const emitStringLiteral = (str): StringLiteral => ({
   span: blankSpan,
   type: "StringLiteral",
   hasEscape: false,
   value: str,
 });
 
-export const emitBinaryExpression = (
-  left: Expression,
-  right: Expression,
-  op: BinaryOperator
-): BinaryExpression => ({
+export const emitBinaryExpression = (left, right, op): BinaryExpression => ({
   span: blankSpan,
   type: "BinaryExpression",
   left,
@@ -160,9 +143,9 @@ export const emitBinaryExpression = (
 });
 
 export const emitArrowFunctionExpression = (
-  params: Pattern[],
-  stmts: Statement[],
-  async: boolean = false
+  params,
+  stmts,
+  async = false
 ): ArrowFunctionExpression => ({
   type: "ArrowFunctionExpression",
   generator: false,
@@ -172,18 +155,16 @@ export const emitArrowFunctionExpression = (
   span: blankSpan,
 });
 
-export const emitComputedPropName = (
-  expression: Expression
-): ComputedPropName => ({
+export const emitComputedPropName = (expression): ComputedPropName => ({
   span: blankSpan,
   type: "Computed",
   expression,
 });
 
 export const emitConditionalExpression = (
-  test: Expression,
-  consequent: Expression,
-  alternate: Expression
+  test,
+  consequent,
+  alternate
 ): ConditionalExpression => ({
   span: blankSpan,
   type: "ConditionalExpression",
@@ -192,15 +173,15 @@ export const emitConditionalExpression = (
   alternate,
 });
 
-export const emitNumericLiteral = (value: number): NumericLiteral => ({
+export const emitNumericLiteral = (value): NumericLiteral => ({
   span: blankSpan,
   type: "NumericLiteral",
   value,
 });
 
 export const emitOptionalChain = (
-  object: Expression,
-  property: Identifier | PrivateName | ComputedPropName
+  object,
+  property
 ): OptionalChainingExpression => ({
   span: blankSpan,
   type: "OptionalChainingExpression",
@@ -210,8 +191,8 @@ export const emitOptionalChain = (
 });
 
 export const emitUpdateExpression = (
-  argument: Expression,
-  operator: UpdateOperator,
+  argument,
+  operator,
   prefix: boolean = false
 ): UpdateExpression => ({
   span: blankSpan,

@@ -34,14 +34,14 @@ import {
 
 export const blankSpan: Span = { start: 0, end: 0, ctxt: 0 };
 
-export const void0: UnaryExpression = {
+export const void0 = {
   span: blankSpan,
   type: "UnaryExpression",
   argument: emitNumericLiteral(0),
   operator: "void",
 };
 
-export const webpackCall = (statements: Statement[]): ExpressionStatement =>
+export const webpackCall = (statements) =>
   emitExpressionStatement(
     emitCallExpression(
       emitMemberExpression(emitIdentifier("_w"), emitIdentifier("push")),
@@ -114,15 +114,12 @@ export const loopOverModules = (
           )
         )
       ),
-      ...tests.map(([t, s]): Statement => emitIfStatement(t, s))
+      ...tests.map(([t, s]) => emitIfStatement(t, s))
     ),
   },
 ];
 
-export const webpackAndRun = (
-  moduleFinds: CallExpression[],
-  func: ArrowFunctionExpression | FunctionExpression
-): Statement[] => [
+export const webpackAndRun = (moduleFinds, func) => [
   emitVariableDeclaration(
     "const",
     emitVariableDeclarator(

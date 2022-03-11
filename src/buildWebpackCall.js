@@ -30,10 +30,10 @@ import {
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
 
 const addIndexCheck = (
-  varN: string,
+  varN,
   test: Expression | undefined,
   indexed?: [string, number]
-): Expression => {
+) => {
   const indexCheck = (i: [string, number]) =>
     emitBinaryExpression(
       emitUpdateExpression(emitIdentifier(i[0]), "++"),
@@ -53,11 +53,7 @@ const addIndexCheck = (
   return test ? emitBinaryExpression(test, check, "&&") : check;
 };
 
-const hlccByDNameTest = (
-  varN: string,
-  name: string,
-  indexed?: [string, number]
-): [Expression, Statement] => [
+const hlccByDNameTest = (varN, name, indexed?): [Expression, Statement] => [
   addIndexCheck(
     varN,
     emitBinaryExpression(
@@ -73,11 +69,11 @@ const hlccByDNameTest = (
 ];
 
 const hlccByPropsTest = (
-  varN: string,
+  varN,
   props: string[],
-  indexed?: [string, number]
+  indexed?
 ): [Expression, Statement] => {
-  const mProp = (prop: string) =>
+  const mProp = (prop) =>
     emitMemberExpression(emitIdentifier("mDef"), emitIdentifier(prop));
 
   let expr: Expression = emitOptionalChain(
@@ -98,11 +94,7 @@ const hlccByPropsTest = (
   ];
 };
 
-const hlccByPredicateTest = (
-  varN: string,
-  pred: Expression,
-  indexed?: [string, number]
-): [Expression, Statement] => [
+const hlccByPredicateTest = (varN, pred, indexed?): [Expression, Statement] => [
   addIndexCheck(
     varN,
     emitCallExpression(pred, emitIdentifier("mRes")),
@@ -197,7 +189,7 @@ export default (
           )
         );
         break;
-      
+
       case "hlccByPredicate":
         variableDeclarations.push({
           span: blankSpan,
@@ -215,7 +207,7 @@ export default (
         break;
 
       default:
-        throw new Error("Invalid module find " + find.callee.value)
+        throw new Error("Invalid module find " + find.callee.value);
     }
   }
 
