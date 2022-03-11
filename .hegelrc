@@ -1,3 +1,4 @@
+environment: nodejs
 include:
   - ./**/*.js
 exclude:
