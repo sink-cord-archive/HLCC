@@ -11,12 +11,11 @@ import {
   VariableDeclarator,
 } from "@swc/core";
 
-import { webpackCall, loopOverModules, blankSpan } from "./ASTTemplates.js";
+import { webpackCall, loopOverModules } from "./ASTTemplates.js";
 import {
   emitAssignmentExpression,
   emitBinaryExpression,
   emitCallExpression,
-  emitComputedPropName,
   emitExpressionStatement,
   emitIdentifier,
   emitMemberExpression,
@@ -26,7 +25,8 @@ import {
   emitUpdateExpression,
   emitVariableDeclaration,
   emitVariableDeclarator,
-} from "./emitters.js";
+  blankSpan
+} from "emitkit";
 import { MODULE_FIND_FUNC_NAMES } from "./constants.js";
 
 const addIndexCheck = (

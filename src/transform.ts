@@ -1,13 +1,14 @@
 import {
   CallExpression,
   ExpressionStatement,
+  Program,
   Statement,
-  transform,
 } from "@swc/core";
+import { transformSync } from "@swc/wasm";
 
 import { Visitor } from "@swc/core/Visitor.js";
 import { webpackAndRun } from "./ASTTemplates.js";
-import { emitBlockStatement } from "./emitters.js";
+import { emitBlockStatement } from "emitkit";
 
 class HLCC extends Visitor {
   visitExpressionStatement(stmt: ExpressionStatement): Statement {
@@ -54,19 +55,16 @@ class HLCC extends Visitor {
   }
 }
 
-export default async (input: string, shouldMinify: boolean = true) =>
-  (
-    await transform(input, {
-      plugin: (m) => new HLCC().visitProgram(m),
-      minify: shouldMinify,
-      jsc: {
-        target: "es2022",
-        minify: {
-          /* compress: {
-          inline: 0,
-        },*/
-          mangle: shouldMinify,
-        },
+export const plugin = (m: Program) => new HLCC().visitProgram(m);
+
+export default (input: string, shouldMinify: boolean = true) =>
+  transformSync(input, {
+    plugin,
+    minify: shouldMinify,
+    jsc: {
+      target: "es2022",
+      minify: {
+        mangle: shouldMinify,
       },
-    })
-  ).code;
+    },
+  }).code;

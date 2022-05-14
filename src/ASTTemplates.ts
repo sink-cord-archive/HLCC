@@ -1,16 +1,11 @@
 import {
   ArrowFunctionExpression,
-  BlockStatement,
   CallExpression,
   Expression,
   ExpressionStatement,
-  ForInStatement,
   FunctionExpression,
-  IfStatement,
-  Span,
   Statement,
   UnaryExpression,
-  VariableDeclaration,
 } from "@swc/core";
 import buildWebpackCall from "./buildWebpackCall.js";
 import {
@@ -27,12 +22,11 @@ import {
   emitMemberExpression,
   emitNumericLiteral,
   emitOptionalChain,
-  emitStringLiteral,
   emitVariableDeclaration,
   emitVariableDeclarator,
-} from "./emitters.js";
-
-export const blankSpan: Span = { start: 0, end: 0, ctxt: 0 };
+  blankSpan,
+  emitObjectExpression
+} from "emitkit";
 
 export const void0: UnaryExpression = {
   span: blankSpan,
@@ -47,11 +41,7 @@ export const webpackCall = (statements: Statement[]): ExpressionStatement =>
       emitMemberExpression(emitIdentifier("_w"), emitIdentifier("push")),
       emitArrayExpression(
         emitArrayExpression(emitCallExpression(emitIdentifier("Symbol"))),
-        {
-          type: "ObjectExpression",
-          properties: [],
-          span: blankSpan,
-        },
+        emitObjectExpression(),
         emitArrowFunctionExpression([emitIdentifier("e")], statements)
       )
     )
