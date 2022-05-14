@@ -4,9 +4,10 @@ import {
   Program,
   Statement,
 } from "@swc/core";
-import { transformSync } from "@swc/wasm";
+import swcTransformer from "./swcTransformer.js";
 
 import { Visitor } from "@swc/core/Visitor.js";
+
 import { webpackAndRun } from "./ASTTemplates.js";
 import { emitBlockStatement } from "emitkit";
 
@@ -55,10 +56,11 @@ class HLCC extends Visitor {
   }
 }
 
-export const plugin = (m: Program) => new HLCC().visitProgram(m);
+export const plugin: (m: Program) => Program = (m: Program) =>
+  new HLCC().visitProgram(m);
 
 export default (input: string, shouldMinify: boolean = true) =>
-  transformSync(input, {
+  swcTransformer(input, {
     plugin,
     minify: shouldMinify,
     jsc: {
