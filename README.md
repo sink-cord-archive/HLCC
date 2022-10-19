@@ -1,6 +1,13 @@
 # HLCC
 The client mod agnostic tool to build Discord snippets, powered by swc
 
+> **Warning** |
+> This repo is a Discord modding project.
+> On the 27th September 2022, Discord switched part of their build pipeline out.  
+> This fundamentally broke many parts of modding, and hence this project is discontinued.  
+> For more info see https://cumcord.com/an-exercise-in-futility  
+> **EVERYTHING HERE IS NOW LICENSED UNDER THE [UNLICENSE](https://unlicense.org) AS OF 2022-10-19**
+
 [![wakatime](https://wakatime.com/badge/github/yellowsink/HLCC.svg)](https://wakatime.com/badge/github/yellowsink/HLCC)
 ![npm](https://img.shields.io/npm/v/hlcc)
 
